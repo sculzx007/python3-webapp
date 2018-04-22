@@ -1,2 +1,2 @@
 # python3-webapp
-The project of webapp by using python3
+A project of webapp by using python3
