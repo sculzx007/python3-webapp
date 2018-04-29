@@ -3,7 +3,7 @@
 
 __author__ = 'lzx'
 
-'编写用user、blog、comment的Model'
+'编写用于user、blog、comment的Model'
 
 import time, uuid
 from orm import Model, StringField, BooleanField, FloatField, TextField
