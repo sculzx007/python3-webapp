@@ -5,9 +5,20 @@ __author__ = 'lzx'
 
 ' url handlers '
 
-import re, time, json, logging, hashlib, base64,asyncio
+import re, time, json, logging, hashlib, base64,asyncio,_asyncio
 from coroweb import get, post
 from models import User, Comment, Blog, next_id
+from apis import Page
+
+def get_page_index(page_str):
+    p = 1
+    try:
+        p = int(page_str)
+    except ValueError as e:
+        raise('Error: %s' % e)
+    if p < 0:
+        p = 1
+    return p
 
 @get('/')
 def index(request):
@@ -18,6 +29,18 @@ def index(request):
         Blog(id = '3', name = 'Learn Swift', summary = summary, created_at = time.time()-7200)
     ]
     return {
-        '__tempalte__': 'blog.html',
+        '__template__': 'blogs.html',
         'blogs': blogs
     }
+@get('/api/users')
+def api_get_users(*, page='1'):
+    page_index = get_page_index(page)
+    num = await User.findNumber('count(id)')
+    p = Page(num, page_index)
+    if num == 0:
+        return dict(page=p, users=())
+
+    users = yield from User.findAll(orderBy='created_at desc', limit=(p.offset, p.limit))
+    for u in users:
+        u.passwd = '******'
+        return dict(page=p, users=users)
