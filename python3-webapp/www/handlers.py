@@ -14,8 +14,6 @@ from aiohttp import web
 
 COOK_NAME = 'awesession'
 _COOKIE_KEY = configs.session.secret
-_RE_EMAIL = re.compile(r'^[a-z0-9\.\-\_]+\@[a-z0-9\-\_]+(\.[a-z0-9\-\_]+){1,4}$')
-_RE_SHA1 = re.compile(r'[0-9a-f]{40}$')
 
 def user2cookie(user, max_age):
     '''
@@ -59,8 +57,6 @@ async def cookie2user(cookie_str):
         logging.exception(e)
         return None
 
-
-
 def get_page_index(page_str):
     p = 1
     try:
@@ -96,6 +92,28 @@ def api_get_users(*, page='1'):
         u.passwd = '******'
         return dict(page=p, users=users)
 
+@get('/register')
+def register():
+    return {
+        '__template__': 'register.html'
+    }
+
+@get('/signin')
+def signin():
+    return {
+        '__template__': 'signin.html'
+    }
+
+@get('/signout')
+def signout(request):
+    referer = request.headers.get('Referer')
+    r = web.HTTPFound(referer or '/')
+    r.set_cookie(COOK_NAME, '-deleted-', max_age=0, httponly = True)
+    logging.info('user signed out.')
+    return r
+
+_RE_EMAIL = re.compile(r'^[a-z0-9\.\-\_]+\@[a-z0-9\-\_]+(\.[a-z0-9\-\_]+){1,4}$')
+_RE_SHA1 = re.compile(r'[0-9a-f]{40}$')
 
 @post('/api/users')
 def api_register_user(*, email, name, passwd):
